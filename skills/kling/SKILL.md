@@ -5,7 +5,8 @@ description: Vídeo de reforma (virtual staging) a partir de UMA imagem de inter
 
 # Virtual Staging Video — Kling AI
 
-Motor: `kling/rodar.py`, sobre o CLI `kling` (repo `klingaimcp`).
+Sistema independente em `skills/kling/` — `rodar.py` + `prompts.py` próprios, sobre o
+CLI `kling` (repo `klingaimcp`). Mexer aqui não afeta `agnes/` nem `higgsfield/`.
 
 > ⚠️ **Toda submissão é cobrada em créditos** da conta Pro/SVIP e **não cancela**.
 > O script não envia nada sem `--sim`. Nunca submeta job de teste às cegas; confirme os
@@ -36,9 +37,9 @@ Para automação, use o CLI.
 ## Como rodar
 
 ```bash
-python3 kling/rodar.py --so-imagem --sim   # etapa 1 (portão de consistência)
-python3 kling/rodar.py --so-video  --sim   # etapa 2, reusando o "antes" aprovado
-python3 kling/rodar.py --sim               # as duas
+python3 skills/kling/rodar.py --so-imagem --sim   # etapa 1 (portão de consistência)
+python3 skills/kling/rodar.py --so-video  --sim   # etapa 2, reusando o "antes" aprovado
+python3 skills/kling/rodar.py --sim               # as duas
 ```
 
 Sem `--sim` o script só imprime a configuração e sai com código 2 — é o freio de crédito.
@@ -72,7 +73,7 @@ Se o "antes" trocar a arquitetura, repita descrevendo o layout real:
 
 ```bash
 LAYOUT="one large window on the whole left wall, blank back wall with no openings" \
-  python3 kling/rodar.py --so-imagem --sim
+  python3 skills/kling/rodar.py --so-imagem --sim
 ```
 
 ## Regras do motor

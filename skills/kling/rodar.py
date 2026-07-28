@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
-"""Pipeline Kling AI: interior finalizado -> 'antes' -> vídeo de reforma.
+"""Sistema KLING — independente. Imagem e vídeo, os dois no Kling AI.
 
 Usa o CLI `kling` (repo klingaimcp). Diferente do Agnes, **toda submissão é
 cobrada em créditos** da conta Pro/SVIP — por isso nada é enviado sem `--sim`.
 
-    python3 kling/rodar.py --so-imagem --sim
-    python3 kling/rodar.py --so-video --sim
-    python3 kling/rodar.py --sim
+    python3 rodar.py --so-imagem --sim
+    python3 rodar.py --so-video --sim
+    python3 rodar.py --sim
+
+Esta pasta é autossuficiente: prompts.py e rodar.py vivem aqui.
 
 Defaults do Nei (klingai-nei/README.md): resolução 720p em toda geração; a
 resposta bruta de cada submit é gravada ANTES de qualquer parse — job pago não
@@ -23,11 +25,13 @@ import sys
 import time
 import urllib.request
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "agnes"))
+AQUI = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, AQUI)
 
-import prompts  # noqa: E402  (mesmos prompts, um motor diferente)
+import prompts  # noqa: E402  (cópia local — esta pasta é autossuficiente)
 
-RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# raiz do projeto = duas pastas acima (skills/kling/ -> repo/)
+RAIZ = os.path.dirname(os.path.dirname(AQUI))
 ENTRADA = os.path.join(RAIZ, "input", "interior-design.png")
 SAIDA = os.path.join(RAIZ, "output")
 BRUTO = os.path.join(SAIDA, "kling-respostas")

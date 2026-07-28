@@ -36,9 +36,10 @@ Saídas: `output/before-construction.png` · `output/completed-interior.png` · 
 7. Salve em `output/renovation-video.mp4` e confira com `ffprobe` (dimensão e duração reais,
    não o JSON da resposta).
 
-Atalho: `python3 agnes/rodar.py --img agente --video higgsfield` prepara os arquivos e
-escreve os dois handoffs (`output/HANDOFF-imagem.md`, `output/HANDOFF-video.md`) com os
-prompts e caminhos já preenchidos.
+Atalho: `python3 skills/higgsfield/rodar.py` prepara os arquivos e escreve os dois handoffs
+(`output/HANDOFF-imagem.md`, `output/HANDOFF-video.md`) com prompts e caminhos preenchidos.
+
+Sistema independente: `rodar.py` + `prompts.py` próprios nesta pasta.
 
 ## Prompt — imagem antes da construção
 

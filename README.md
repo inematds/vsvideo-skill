@@ -33,28 +33,27 @@ Prompts, portão de consistência e caminhos de saída são idênticos nas três
 motor. Escolha pelo nome ao pedir ("faz o vídeo de reforma pelo Kling").
 
 ```bash
-python3 agnes/rodar.py                    # Agnes: sem custo, roda direto
-python3 kling/rodar.py --so-imagem --sim  # Kling: só submete com --sim (é cobrado)
+python3 skills/agnes/rodar.py                          # Agnes completo (US$ 0)
+python3 skills/agnes/rodar.py --img gpt-image2 --sim   # GPT Image 2 na imagem + vídeo Agnes
+python3 skills/kling/rodar.py --sim                    # Kling nos dois (crédito)
+python3 skills/higgsfield/rodar.py                     # prepara os handoffs do fluxo original
 ```
 
-## Estrutura
+## Estrutura — três sistemas independentes
 
 ```text
 vsvideo-skill/
-├── input/                       # coloque aqui a imagem do interior
-│   └── interior-design.png
-├── output/                      # gerados
-│   ├── before-construction.png
-│   ├── completed-interior.png
-│   └── renovation-video.mp4
-├── agnes/                       # motor Agnes (HTTP, US$ 0) + prompts compartilhados
-├── kling/                       # motor Kling (CLI `kling`, créditos pagos)
+├── input/interior-design.png     # a imagem do interior finalizado
+├── output/                       # tudo que é gerado
 ├── skills/
-│   ├── higgsfield/SKILL.md      # 1 — fluxo original (GPT Image + Seedance)
-│   ├── agnes/SKILL.md           # 2 — Agnes AI (US$ 0)
-│   └── kling/SKILL.md           # 3 — Kling AI (créditos)
-└── doc/                         # tutorial (PT/EN) + spec original
+│   ├── higgsfield/               # 1 — SKILL.md + rodar.py + prompts.py
+│   ├── agnes/                    # 2 — SKILL.md + rodar.py + client.py + prompts.py
+│   └── kling/                    # 3 — SKILL.md + rodar.py + prompts.py
+└── doc/                          # tutorial (PT/EN) + spec original + PLANO-AGNES.md
 ```
+
+Cada pasta tem o próprio código e os próprios prompts — **nenhuma importa a outra**. Mexer
+numa não quebra as demais (o preço é a duplicação intencional dos prompts).
 
 ## Instalação
 
@@ -129,39 +128,22 @@ Modelos usados: `agnes-image-2.1-flash` (img2img, imagem "antes") e `agnes-video
 > ⚠️ No plano free da Agnes, seus dados podem ser usados para treinar os modelos.
 > Não envie imagem de cliente que seja confidencial.
 
-### Rodando pelo script
+### Origem da imagem dentro do Agnes
 
-```bash
-python3 agnes/rodar.py --so-imagem   # etapa 1: só o "antes" (portão de consistência)
-python3 agnes/rodar.py --so-video    # etapa 2: o vídeo, reusando o "antes" aprovado
-python3 agnes/rodar.py               # as duas de uma vez
-```
+O vídeo é sempre Agnes; a imagem "antes" tem quatro origens:
 
-### Escolhendo o provedor de cada etapa
-
-As duas etapas são independentes:
-
-| Flag | Opções | Default |
+| `--img` | Como funciona | Custo |
 |---|---|---|
-| `--img` | `agnes` (img2img HTTP) · `agente` (GPT Image, por handoff) | `agnes` |
-| `--video` | `agnes` (keyframes HTTP) · `higgsfield` (Seedance 2.0 Mini via MCP, por handoff) | `agnes` |
+| `agnes` (default) | img2img da própria Agnes | **US$ 0** |
+| `gpt-image2` | GPT Image 2 pelo CLI do Kling — gera lá, **baixa aqui** | crédito Kling |
+| `kling` | `kling-image-v3_0` pelo CLI do Kling — idem | crédito Kling |
+| `agente` | GPT Image do agente, por handoff | — |
 
-```bash
-python3 agnes/rodar.py                                  # tudo no Agnes (US$ 0)
-python3 agnes/rodar.py --img agente --video agnes       # GPT Image + vídeo Agnes
-python3 agnes/rodar.py --img agente --video higgsfield  # fluxo original
-```
-
-Nos ramos `agente`/`higgsfield` o script não chama a API — GPT Image e Higgsfield são
-ferramentas do agente/MCP. Ele prepara os arquivos e escreve a instrução em
-`output/HANDOFF-imagem.md` / `output/HANDOFF-video.md`, e o agente executa a partir dali.
-Assim o fluxo original continua funcionando, sem nada removido.
-
-Se o "antes" trocar a arquitetura, repita descrevendo o layout real:
+As duas do meio só submetem com `--sim`.
 
 ```bash
 LAYOUT="one large window on the whole left wall, blank back wall with no openings" \
-  python3 agnes/rodar.py --so-imagem
+  python3 skills/agnes/rodar.py --so-imagem
 ```
 
 ## Documentação
