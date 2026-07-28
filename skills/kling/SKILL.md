@@ -1,6 +1,6 @@
 ---
-name: virtual-staging-kling
-description: Vídeo de reforma (virtual staging) a partir de UMA imagem de interior pronto, usando o Kling AI para as duas etapas — imagem "antes da obra" com image_to_image (kling-image-o1) e time-lapse antes→depois com image_to_video usando --tailImage. Use quando pedirem o vídeo de reforma "pelo Kling", "com Kling AI", ou quando quiserem a melhor fidelidade de edição e aceitarem gastar créditos. Para a versão sem custo use virtual-staging-agnes; para GPT Image + Higgsfield use virtual-staging-original.
+name: kling
+description: Vídeo de reforma (virtual staging) a partir de UMA imagem de interior pronto, usando o Kling AI para as duas etapas — imagem "antes da obra" com image_to_image (kling-image-o1) e time-lapse antes→depois com image_to_video usando --tailImage. Use quando pedirem o vídeo de reforma "pelo Kling", "com Kling AI", ou quando quiserem a melhor fidelidade de edição e aceitarem gastar créditos. Para a versão sem custo use agnes; para GPT Image + Higgsfield use higgsfield.
 ---
 
 # Virtual Staging Video — Kling AI

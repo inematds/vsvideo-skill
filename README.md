@@ -19,11 +19,15 @@ O motor de cada etapa depende da skill escolhida (tabela abaixo).
 
 ## Três skills, um motor cada
 
-| Skill | Imagem "antes" | Vídeo | Custo |
-|---|---|---|---|
-| `virtual-staging-agnes` (default) | Agnes `agnes-image-2.1-flash` (img2img) | Agnes `agnes-video-v2.0` (keyframes) | **US$ 0** |
-| `virtual-staging-original` | GPT Image (ferramenta do agente) | Higgsfield Seedance 2.0 Mini (MCP) | conforme a conta |
-| `virtual-staging-kling` | Kling `image_to_image` (`kling-image-o1`, ou `gpt-image2`) | Kling `image_to_video` com `--tailImage` | **créditos Kling** |
+| # | Skill | Imagem "antes" | Vídeo | Custo |
+|---|---|---|---|---|
+| 1 | `higgsfield` (original) | GPT Image (ferramenta do agente) | Higgsfield Seedance 2.0 Mini (MCP) | conforme a conta |
+| 2 | `agnes` | `agnes-image-2.1-flash` (img2img) | `agnes-video-v2.0` (keyframes) | **US$ 0** |
+| 3 | `kling` | `kling-image-v3_0` (ou `gpt-image2`) | `kling-video-v2_5` com `--tailImage` | **créditos Kling** |
+
+Medido em 2026-07-28, na mesma sala: **melhor vídeo = `kling`** (operários críveis, aterrissa no
+keyframe B, mas com marca d'água KlingAI); **melhor custo = `agnes`** (US$ 0, operários borrados);
+**melhor "antes" = `kling-image-v3_0`**.
 
 Prompts, portão de consistência e caminhos de saída são idênticos nas três — o que muda é o
 motor. Escolha pelo nome ao pedir ("faz o vídeo de reforma pelo Kling").
@@ -46,9 +50,9 @@ vsvideo-skill/
 ├── agnes/                       # motor Agnes (HTTP, US$ 0) + prompts compartilhados
 ├── kling/                       # motor Kling (CLI `kling`, créditos pagos)
 ├── skills/
-│   ├── virtual-staging-agnes/SKILL.md
-│   ├── virtual-staging-original/SKILL.md
-│   └── virtual-staging-kling/SKILL.md
+│   ├── higgsfield/SKILL.md      # 1 — fluxo original (GPT Image + Seedance)
+│   ├── agnes/SKILL.md           # 2 — Agnes AI (US$ 0)
+│   └── kling/SKILL.md           # 3 — Kling AI (créditos)
 └── doc/                         # tutorial (PT/EN) + spec original
 ```
 
@@ -57,7 +61,7 @@ vsvideo-skill/
 Copie a pasta da skill para o diretório de skills do seu agente:
 
 ```bash
-cp -r skills/virtual-staging-* ~/.claude/skills/
+cp -r skills/{higgsfield,agnes,kling} ~/.claude/skills/
 ```
 
 Ou trabalhe direto dentro deste repo — o agente encontra a skill em `skills/`.
@@ -90,20 +94,20 @@ Sem usar `input/` — arraste a imagem e peça:
 
 Quando não quiser depender do gatilho:
 
-> usa a skill virtual-staging-agnes na imagem em input/interior-design.png
+> usa a skill agnes na imagem em input/interior-design.png
 
-Trocando o nome, você escolhe o motor: `virtual-staging-agnes`, `virtual-staging-original`
-ou `virtual-staging-kling`. Instaladas em `~/.claude/skills/`, as três também respondem como
+Trocando o nome, você escolhe o motor: `agnes`, `higgsfield`
+ou `kling`. Instaladas em `~/.claude/skills/`, as três também respondem como
 slash command:
 
 ```
-/virtual-staging-agnes
-/virtual-staging-original
-/virtual-staging-kling
+/agnes
+/higgsfield
+/kling
 ```
 
-Antes de rodar: no ramo **original**, confira o MCP com `/mcp` — sem o Higgsfield conectado
-a skill para nas duas imagens. No ramo **Kling**, lembre que cada submissão gasta crédito.
+Antes de rodar: em `/higgsfield`, confira o MCP com `/mcp` — sem o Higgsfield conectado a skill
+para nas duas imagens. Em `/kling`, lembre que cada submissão gasta crédito.
 
 Saídas em `output/`:
 

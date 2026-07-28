@@ -1,6 +1,6 @@
 ---
-name: virtual-staging-original
-description: Vídeo de reforma (virtual staging) a partir de UMA imagem de interior pronto, pelo fluxo ORIGINAL — imagem "antes da obra" com GPT Image e time-lapse antes→depois com Higgsfield Seedance 2.0 Mini via MCP. Use quando pedirem o vídeo de reforma "pelo Higgsfield", "pelo Seedance", "com GPT Image", ou o "fluxo original". Para a versão sem custo use virtual-staging-agnes; para a versão Kling use virtual-staging-kling.
+name: higgsfield
+description: Vídeo de reforma (virtual staging) a partir de UMA imagem de interior pronto, pelo fluxo ORIGINAL — imagem "antes da obra" com GPT Image e time-lapse antes→depois com Higgsfield Seedance 2.0 Mini via MCP. Use quando pedirem o vídeo de reforma "pelo Higgsfield", "pelo Seedance", "com GPT Image", ou o "fluxo original". Para a versão sem custo use agnes; para a versão Kling use kling.
 ---
 
 # Virtual Staging Video — fluxo original (GPT Image + Higgsfield)
@@ -12,7 +12,7 @@ Nenhuma etapa é HTTP: as duas usam **ferramentas do agente/MCP**, então **voc�
 
 Confira com `/mcp` que o **Higgsfield MCP** está conectado. **Se não estiver, pare e avise
 o usuário** — não substitua por outro gerador por conta própria (para isso existem as
-skills `virtual-staging-agnes` e `virtual-staging-kling`, e a troca é decisão do usuário).
+skills `agnes` e `kling`, e a troca é decisão do usuário).
 
 ## Arquivos
 
