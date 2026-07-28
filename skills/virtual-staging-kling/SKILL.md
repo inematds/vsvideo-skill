@@ -19,6 +19,20 @@ Motor: `kling/rodar.py`, sobre o CLI `kling` (repo `klingaimcp`).
   o ponto fraco do Agnes (ver `doc/PLANO-AGNES.md`, risco R1).
 - O mesmo CLI ainda expõe `gpt-image2`, `gemini-3-pro-image` e outros como modelo de imagem.
 
+## Duas portas para a mesma conta
+
+| Porta | Autenticação | Quando usar |
+|---|---|---|
+| **CLI `kling`** (default) | token em `~/.kling/.credentials` (`kling login`, OAuth) | scriptável — é o que o `kling/rodar.py` usa; funciona headless |
+| **MCP `klingai`** | OAuth do kling.ai (`https://kling.ai/mcp`) | no chat, quando você quiser disparar pelas ferramentas do agente |
+
+O `.mcp.json` do repo já declara o `klingai`; ao abrir a sessão neste projeto, confirme com
+`/mcp` (pode pedir reautorização). **Não há chave de API em `.env`** — nem no `wifi` nem no
+`openpcbot`; as duas portas usam login OAuth da mesma conta Pro/SVIP.
+
+⚠️ MCP com autenticação interativa costuma **não** estar disponível em execução headless/cron.
+Para automação, use o CLI.
+
 ## Como rodar
 
 ```bash
@@ -47,6 +61,10 @@ LAYOUT="one large window on the whole left wall, blank back wall with no opening
 
 - **Resposta bruta gravada antes de qualquer parse**, em `output/kling-respostas/` — job pago
   não cancela e ID perdido é crédito perdido (regra do `klingai-nei`).
+- O resultado sai em **`works[].url`**; se o submit só devolver `generation_id`, o script faz
+  poll em `kling query_tasks <id>`.
+- **As URLs expiram em 24 h** — o script baixa na hora. Se o download falhar, recupere com
+  `kling query_tasks <generation_id>` (o arquivo bruto guarda o id).
 - Se o script não achar a URL do resultado, ele **não resubmete**: manda você abrir o arquivo
   bruto e baixar à mão. Resubmeter às cegas gasta crédito de novo.
 - **Prompts em inglês** (compartilhados com as outras skills, em `agnes/prompts.py`); o de

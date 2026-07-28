@@ -61,16 +61,60 @@ def submeter(argv: list, rotulo: str, timeout: int) -> dict:
         return {"_texto": proc.stdout}
 
 
-def extrair_url(resp: dict, extensoes: tuple) -> str:
-    """Acha a primeira URL de resultado na resposta (formato varia por modelo)."""
+def works_url(resp: dict) -> str:
+    """URL do asset: `works[].url` (formato do query_tasks, ver GUIA-KLING-MCP-CLI)."""
+    def procurar(o):
+        if isinstance(o, dict):
+            if isinstance(o.get("works"), list):
+                for w in o["works"]:
+                    if isinstance(w, dict) and w.get("url"):
+                        return w["url"]
+            for v in o.values():
+                achado = procurar(v)
+                if achado:
+                    return achado
+        elif isinstance(o, list):
+            for v in o:
+                achado = procurar(v)
+                if achado:
+                    return achado
+        return None
+    return procurar(resp)
+
+
+def generation_id(resp: dict) -> str:
     bruto = json.dumps(resp)
-    for m in re.finditer(r"https?://[^\"'\\\s]+", bruto):
-        url = m.group(0)
-        if url.lower().split("?")[0].endswith(extensoes):
+    m = re.search(r'"generation_?[iI]d"\s*:\s*"?([\w-]+)', bruto)
+    return m.group(1) if m else None
+
+
+def resultado(resp: dict, rotulo: str, teto: int = 900) -> str:
+    """Pega a URL do submit; se só veio o generation_id, faz poll no query_tasks.
+
+    Nunca resubmete: job pago não cancela. Se não resolver, manda o usuário
+    abrir a resposta bruta e baixar à mão.
+    """
+    url = works_url(resp)
+    if url:
+        return url
+    gid = generation_id(resp)
+    if not gid:
+        raise RuntimeError(
+            "sem works[].url e sem generation_id — abra o arquivo bruto em "
+            f"{BRUTO} e baixe à mão (o job foi cobrado, NÃO resubmeta)"
+        )
+    print(f"[kling] generation_id={gid} — consultando query_tasks")
+    inicio = time.time()
+    while time.time() - inicio < teto:
+        time.sleep(15)
+        st = submeter(["kling", "query_tasks", gid], f"{rotulo}-query", timeout=120)
+        url = works_url(st)
+        print(f"[kling] {int(time.time() - inicio)}s {'pronto' if url else 'aguardando'}")
+        if url:
             return url
     raise RuntimeError(
-        "não achei URL de resultado na resposta — confira o arquivo bruto em "
-        f"{BRUTO} e baixe manualmente (o job foi cobrado, não resubmeta às cegas)"
+        f"timeout consultando {gid}. O job existe e foi cobrado — rode "
+        f"`kling query_tasks {gid}` e baixe manualmente. NÃO resubmeta."
     )
 
 
@@ -106,7 +150,8 @@ def etapa_imagem(modelo: str, resolucao: str) -> str:
          "--imageCount", "1", "--poll", "300", prompt_antes()],
         rotulo="imagem", timeout=420,
     )
-    return baixar(extrair_url(resp, (".png", ".jpg", ".jpeg", ".webp")), ANTES)
+    # URLs do Kling expiram em 24h — baixar na hora
+    return baixar(resultado(resp, "imagem"), ANTES)
 
 
 def etapa_video(modelo: str, duracao: str, resolucao: str) -> str:
@@ -116,7 +161,7 @@ def etapa_video(modelo: str, duracao: str, resolucao: str) -> str:
          "--imageCount", "1", "--poll", "900", prompts.VIDEO_SEEDANCE],
         rotulo="video", timeout=1200,
     )
-    caminho = baixar(extrair_url(resp, (".mp4", ".mov")), VIDEO)
+    caminho = baixar(resultado(resp, "video"), VIDEO)
     print(f"[ffprobe] {ffprobe(caminho)}")
     return caminho
 
