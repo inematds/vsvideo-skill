@@ -20,6 +20,27 @@ python3 agnes/rodar.py --so-video    # etapa 2: o vídeo, reusando o "antes" apr
 python3 agnes/rodar.py               # as duas de uma vez
 ```
 
+## Escolha de provedor (por etapa, independentes)
+
+| Flag | Opções | Default |
+|---|---|---|
+| `--img` | `agnes` (img2img HTTP) · `agente` (GPT Image, por handoff) | `agnes` |
+| `--video` | `agnes` (keyframes HTTP) · `higgsfield` (Seedance 2.0 Mini via MCP, por handoff) | `agnes` |
+
+```bash
+python3 agnes/rodar.py                                  # tudo no Agnes (US$ 0)
+python3 agnes/rodar.py --img agente --video agnes       # fallback do risco R1
+python3 agnes/rodar.py --img agente --video higgsfield  # fluxo original
+```
+
+**Handoff:** GPT Image e Higgsfield são ferramentas do agente/MCP, não endpoints HTTP —
+um script Python não os chama. Nesses ramos o script prepara os arquivos e escreve a
+instrução exata (prompt + caminhos) em `output/HANDOFF-imagem.md` / `output/HANDOFF-video.md`;
+**quem executa é você, o agente**. Leia o handoff, gere, salve no caminho indicado e siga.
+
+No ramo `higgsfield`, confira `/mcp` antes: sem o MCP conectado, **pare e avise** — não
+troque de gerador por conta própria.
+
 Se o "antes" trocar a arquitetura, rode de novo passando o layout real do ambiente:
 
 ```bash

@@ -1,9 +1,21 @@
 #!/usr/bin/env python3
-"""Pipeline Agnes: interior finalizado -> imagem 'antes' -> vídeo de reforma.
+"""Pipeline: interior finalizado -> imagem 'antes' -> vídeo de reforma.
 
-    python3 agnes/rodar.py                    # tudo
-    python3 agnes/rodar.py --so-imagem        # só a etapa 1 (portão de consistência)
-    python3 agnes/rodar.py --so-video         # reaproveita o 'antes' já gerado
+Cada etapa escolhe o seu provedor, de forma independente:
+
+    --img    agnes | agente     (default: agnes)
+    --video  agnes | higgsfield (default: agnes)
+
+`agnes` = HTTP direto, o script resolve sozinho (custo US$ 0).
+`agente`/`higgsfield` = handoff: o script prepara os arquivos e escreve a
+instrução exata em output/HANDOFF-<etapa>.md; quem executa é o agente, porque
+GPT Image e o Higgsfield MCP são ferramentas dele, não endpoints HTTP.
+
+Exemplos:
+    python3 agnes/rodar.py                                  # tudo no Agnes
+    python3 agnes/rodar.py --so-imagem                      # portão de consistência
+    python3 agnes/rodar.py --img agente --video agnes       # fallback do risco R1
+    python3 agnes/rodar.py --img agente --video higgsfield  # fluxo original
 """
 
 import argparse
@@ -23,10 +35,14 @@ SAIDA = os.path.join(RAIZ, "output")
 ANTES = os.path.join(SAIDA, "before-construction.png")
 DEPOIS = os.path.join(SAIDA, "completed-interior.png")
 VIDEO = os.path.join(SAIDA, "renovation-video.mp4")
+HANDOFF_IMG = os.path.join(SAIDA, "HANDOFF-imagem.md")
+HANDOFF_VID = os.path.join(SAIDA, "HANDOFF-video.md")
 
 LARGURA, ALTURA = 1312, 736
-LIMITE_REF = 10 * 1024 * 1024  # 10 MB por imagem de referência
+LIMITE_REF = 10 * 1024 * 1024  # 10 MB por imagem de referência (Agnes)
 
+
+# ---------------------------------------------------------------- preparação
 
 def preparar_entrada(origem: str) -> str:
     """Copia a imagem enviada como 'depois' e garante <=10MB / 1312x736."""
@@ -43,19 +59,27 @@ def preparar_entrada(origem: str) -> str:
     return DEPOIS
 
 
-def etapa_imagem() -> str:
-    print("[1/2] gerando o 'antes da obra' (img2img)")
-    prompt = prompts.ANTES
-    if os.environ.get("LAYOUT"):
-        # descrição do layout real, extraída da análise da imagem — reduz a
-        # deriva de arquitetura do img2img (ver PLANO-AGNES.md, risco R1)
-        prompt = prompt.replace(
+def prompt_antes() -> str:
+    """Prompt do 'antes', com o layout real do ambiente quando informado.
+
+    Sem isso o img2img inventa portas e janelas (PLANO-AGNES.md, risco R1).
+    """
+    p = prompts.ANTES
+    layout = os.environ.get("LAYOUT")
+    if layout:
+        p = p.replace(
             "It must look like the exact same room",
-            f"Room layout, unchanged: {os.environ['LAYOUT']}. "
-            "It must look like the exact same room",
+            f"Room layout, unchanged: {layout}. It must look like the exact same room",
         )
+    return p
+
+
+# ------------------------------------------------------- etapa 1: a imagem
+
+def imagem_agnes() -> str:
+    print("[1/2] 'antes da obra' via Agnes (img2img)")
     png = client.gerar_imagem(
-        prompt,
+        prompt_antes(),
         size=f"{LARGURA}x{ALTURA}",
         refs=[client.data_uri(DEPOIS)],
     )
@@ -65,8 +89,44 @@ def etapa_imagem() -> str:
     return ANTES
 
 
-def etapa_video(num_frames: int, seed: int) -> str:
-    print(f"[2/2] gerando o vídeo ({num_frames} frames @24fps)")
+def imagem_agente() -> str:
+    """Handoff para o agente gerar o 'antes' com GPT Image (fluxo original)."""
+    texto = f"""# Handoff — imagem "antes da construção" (GPT Image)
+
+O script preparou o material. **Você**, agente, executa esta etapa: o GPT Image é
+ferramenta sua, não endpoint HTTP.
+
+**Referência (o ambiente finalizado):** `{DEPOIS}`
+**Salvar o resultado em:** `{ANTES}`
+**Proporção:** {LARGURA}x{ALTURA} (16:9)
+
+## Prompt
+
+{prompt_antes()}
+
+## Depois de gerar
+
+Compare as duas imagens e só siga se a **câmera e a arquitetura** baterem: mesma
+posição e altura de câmera, mesmas paredes, mesmas aberturas, mesmo pé-direito.
+Se o layout mudou, gere de novo — não leve um "antes" errado para o vídeo.
+
+Em seguida rode a etapa 2:
+
+```bash
+python3 agnes/rodar.py --so-video --video agnes        # ou --video higgsfield
+```
+"""
+    with open(HANDOFF_IMG, "w", encoding="utf-8") as fh:
+        fh.write(texto)
+    print(f"[1/2] handoff -> {HANDOFF_IMG}")
+    print("[1/2] o agente gera o 'antes' com GPT Image e salva em output/.")
+    return HANDOFF_IMG
+
+
+# -------------------------------------------------------- etapa 2: o vídeo
+
+def video_agnes(num_frames: int, seed: int) -> str:
+    print(f"[2/2] vídeo via Agnes ({num_frames} frames @24fps)")
     mp4 = client.gerar_video(
         prompts.VIDEO,
         keyframes=[client.data_uri(ANTES), client.data_uri(DEPOIS)],
@@ -83,6 +143,36 @@ def etapa_video(num_frames: int, seed: int) -> str:
     print(f"[ffprobe] {ffprobe(VIDEO)}")
     return VIDEO
 
+
+def video_higgsfield() -> str:
+    """Handoff para o agente gerar o vídeo pelo Higgsfield MCP (fluxo original)."""
+    texto = f"""# Handoff — vídeo de reforma (Higgsfield Seedance 2.0 Mini, via MCP)
+
+O script preparou os keyframes. **Você**, agente, executa esta etapa: o Higgsfield
+é MCP, não endpoint HTTP. Confirme antes com `/mcp` que ele está conectado — sem
+isso, pare e avise, não troque de gerador por conta própria.
+
+**@image1 (antes):** `{ANTES}`
+**@image2 (depois):** `{DEPOIS}`
+**Salvar em:** `{VIDEO}`
+**Modelo:** Seedance 2.0 Mini
+
+## Prompt
+
+{prompts.VIDEO_SEEDANCE}
+
+## Depois de gerar
+
+Confira o arquivo com `ffprobe` (dimensão e duração reais), não o JSON da resposta.
+"""
+    with open(HANDOFF_VID, "w", encoding="utf-8") as fh:
+        fh.write(texto)
+    print(f"[2/2] handoff -> {HANDOFF_VID}")
+    print("[2/2] o agente dispara o Higgsfield MCP com os dois keyframes.")
+    return HANDOFF_VID
+
+
+# ------------------------------------------------------------------ utilidades
 
 def dimensao(caminho: str) -> str:
     try:
@@ -112,28 +202,43 @@ def ffprobe(caminho: str) -> str:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--imagem", default=ENTRADA, help="interior finalizado")
+    ap.add_argument("--img", choices=("agnes", "agente"), default="agnes",
+                    help="provedor da imagem 'antes' (agente = GPT Image, por handoff)")
+    ap.add_argument("--video", choices=("agnes", "higgsfield"), default="agnes",
+                    help="provedor do vídeo (higgsfield = MCP, por handoff)")
     ap.add_argument("--frames", type=int, default=145, help="8n+1, <=441")
     ap.add_argument("--seed", type=int, default=70428)
     ap.add_argument("--so-imagem", action="store_true")
     ap.add_argument("--so-video", action="store_true")
     args = ap.parse_args()
 
-    if not os.path.exists(args.imagem):
-        print(f"erro: imagem não encontrada em {args.imagem}")
-        return 1
+    print(f"[cfg] imagem={args.img} · vídeo={args.video}")
 
     if not args.so_video:
+        if not os.path.exists(args.imagem):
+            print(f"erro: imagem não encontrada em {args.imagem}")
+            return 1
         preparar_entrada(args.imagem)
-        etapa_imagem()
+        if args.img == "agnes":
+            imagem_agnes()
+        else:
+            imagem_agente()
+            print("\nGere o 'antes' e depois rode a etapa 2 com --so-video.")
+            return 0
         if args.so_imagem:
             print("\nConfira o 'antes' antes de gerar o vídeo: mesma câmera, "
                   "mesmas paredes e aberturas. Se o layout mudou, rode de novo.")
             return 0
-    elif not os.path.exists(ANTES):
-        print(f"erro: --so-video exige {ANTES} já gerado")
-        return 1
 
-    etapa_video(args.frames, args.seed)
+    for arquivo in (ANTES, DEPOIS):
+        if not os.path.exists(arquivo):
+            print(f"erro: o vídeo precisa de {arquivo} — gere a etapa 1 antes")
+            return 1
+
+    if args.video == "agnes":
+        video_agnes(args.frames, args.seed)
+    else:
+        video_higgsfield()
     return 0
 
 
