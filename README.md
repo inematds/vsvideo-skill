@@ -43,13 +43,49 @@ Ou trabalhe direto dentro deste repo — o agente encontra a skill em `skills/`.
 
 ## Uso
 
-Coloque a imagem em `input/interior-design.png` (ou anexe no chat) e peça:
+Três formas de dar o comando.
 
-> "faz o vídeo de reforma dessa imagem"
+### 1. Linguagem natural (o normal)
 
-Gatilhos: *vídeo de reforma*, *virtual staging*, *antes e depois do ambiente*, *time-lapse de obra*.
+```bash
+cd ~/projetos/vsvideo-skill
+cp ~/Downloads/sala.png input/interior-design.png
+claude
+```
 
-Saídas em `output/`.
+E, no chat:
+
+> faz o vídeo de reforma dessa imagem
+
+Gatilhos que acionam a skill: *vídeo de reforma*, *virtual staging*, *antes e depois do ambiente*, *time-lapse de obra*, *transformar foto de interior em vídeo de reforma*.
+
+### 2. Anexando a imagem no chat
+
+Sem usar `input/` — arraste a imagem e peça:
+
+> [imagem anexada] transforma isso num vídeo de reforma
+
+### 3. Forçando a skill pelo nome
+
+Quando não quiser depender do gatilho:
+
+> usa a skill virtual-staging-video na imagem em input/interior-design.png
+
+Se a skill estiver instalada em `~/.claude/skills/`, ela também responde como slash command:
+
+```
+/virtual-staging-video
+```
+
+Antes de rodar, confira o MCP do Higgsfield com `/mcp` — sem ele a skill para nas duas imagens.
+
+Saídas em `output/`:
+
+```text
+output/before-construction.png   # casca de obra
+output/completed-interior.png    # o ambiente pronto
+output/renovation-video.mp4      # o time-lapse
+```
 
 ## Pré-requisitos
 
