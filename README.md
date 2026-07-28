@@ -1,5 +1,11 @@
 # vsvideo-skill — Virtual Staging Video
 
+## 📖 Guia de uso
+
+Guia completo (landing + passo a passo): **https://inematds.github.io/vsvideo-skill/guia/**
+
+---
+
 Skill que transforma **uma foto/render de interior finalizado** num **vídeo time-lapse de reforma** (antes → depois), sem edição manual.
 
 ## Como funciona
