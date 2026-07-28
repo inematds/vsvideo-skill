@@ -89,10 +89,30 @@ output/renovation-video.mp4      # o time-lapse
 
 ## Pré-requisitos
 
-- Acesso a **GPT Image** (geração da imagem "antes").
-- **Higgsfield MCP** configurado, com Seedance 2.0 Mini disponível.
+- `AGNES_API_KEY` em `~/projetos/agnes-nei/.env` (API Agnes AI, custo US$ 0).
+- `ffmpeg` / `ffprobe` no PATH.
+- Python 3 (só a biblioteca padrão — sem dependências).
 
-Sem o Higgsfield MCP a skill para após as imagens e avisa — não troca de gerador por conta própria.
+Modelos usados: `agnes-image-2.1-flash` (img2img, imagem "antes") e `agnes-video-v2.0`
+(`mode:"keyframes"`, vídeo antes→depois).
+
+> ⚠️ No plano free da Agnes, seus dados podem ser usados para treinar os modelos.
+> Não envie imagem de cliente que seja confidencial.
+
+### Rodando pelo script
+
+```bash
+python3 agnes/rodar.py --so-imagem   # etapa 1: só o "antes" (portão de consistência)
+python3 agnes/rodar.py --so-video    # etapa 2: o vídeo, reusando o "antes" aprovado
+python3 agnes/rodar.py               # as duas de uma vez
+```
+
+Se o "antes" trocar a arquitetura, repita descrevendo o layout real:
+
+```bash
+LAYOUT="one large window on the whole left wall, blank back wall with no openings" \
+  python3 agnes/rodar.py --so-imagem
+```
 
 ## Documentação
 

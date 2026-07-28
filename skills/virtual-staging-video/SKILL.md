@@ -1,6 +1,6 @@
 ---
 name: virtual-staging-video
-description: Cria um vídeo realista de reforma (virtual staging) a partir de UMA imagem de interior já pronto. Gera a imagem "antes da obra" com GPT Image preservando câmera e arquitetura, e produz o time-lapse antes→depois com Higgsfield Seedance 2.0 Mini (MCP). Use quando pedirem "vídeo de reforma", "virtual staging", "antes e depois de ambiente", "time-lapse de obra", "transformar foto de interior em vídeo de reforma", ou quando anexarem uma foto/render de interior pedindo o vídeo da transformação.
+description: Cria um vídeo realista de reforma (virtual staging) a partir de UMA imagem de interior já pronto. Gera a imagem "antes da obra" preservando câmera e arquitetura, e produz o time-lapse antes→depois com a API Agnes AI (custo US$ 0). Use quando pedirem "vídeo de reforma", "virtual staging", "antes e depois de ambiente", "time-lapse de obra", "transformar foto de interior em vídeo de reforma", ou quando anexarem uma foto/render de interior pedindo o vídeo da transformação.
 ---
 
 # Virtual Staging Video
@@ -9,8 +9,23 @@ description: Cria um vídeo realista de reforma (virtual staging) a partir de UM
 
 A partir de **uma única imagem de interior finalizado**, produzir:
 
-1. a imagem correspondente **antes da construção** (GPT Image);
-2. o **vídeo time-lapse de reforma** entre as duas imagens (Higgsfield Seedance 2.0 Mini via MCP).
+1. a imagem correspondente **antes da construção** (`agnes-image-2.1-flash`, img2img);
+2. o **vídeo time-lapse de reforma** entre as duas imagens (`agnes-video-v2.0`, `mode:"keyframes"`).
+
+## Como rodar
+
+```bash
+python3 agnes/rodar.py --so-imagem   # etapa 1: só o "antes" (portão de consistência)
+python3 agnes/rodar.py --so-video    # etapa 2: o vídeo, reusando o "antes" aprovado
+python3 agnes/rodar.py               # as duas de uma vez
+```
+
+Se o "antes" trocar a arquitetura, rode de novo passando o layout real do ambiente:
+
+```bash
+LAYOUT="one large window on the whole left wall, blank back wall with no openings, \
+blank right wall with no openings" python3 agnes/rodar.py --so-imagem
+```
 
 ## Arquivos do projeto
 
@@ -101,7 +116,12 @@ As the time-lapse progresses, the unfinished room gradually transforms into a fu
 
 Keep the motion busy, realistic, and coordinated, with natural construction activity, dust movement, and a clear sense of progress throughout.
 
-## Notas
+## Notas de API (medidas — ver `doc/PLANO-AGNES.md`)
 
-- Se o Higgsfield MCP não estiver disponível, pare após as imagens e informe o usuário — não substitua por outro gerador sem autorização.
+- **Chave:** `AGNES_API_KEY` em `~/projetos/agnes-nei/.env`, lida em runtime. Nunca copiar nem imprimir.
+- **Prompts em inglês** — em PT o filtro devolve HTTP 400 determinístico.
+- **`size:"1312x736"` explícito, sem `ratio`** — no img2img o `ratio` é ignorado.
+- **Vídeo:** `num_frames` segue 8n+1 e é ≤441 (18,4 s @24 fps); rate limit real de 5 req/min.
+- **O JSON do vídeo mente sobre o tamanho:** pediu 1312×736 e o MP4 saiu 1280×704. Sempre conferir com `ffprobe` (o `rodar.py` já faz).
+- **Sem `seed` no modelo de imagem** (o de vídeo tem) — o "antes" não é reproduzível; corrigir é regenerar.
 - Saída padrão de artefatos: `output/` do projeto (ou `~/projetos/output/<projeto>/` quando pedido).
