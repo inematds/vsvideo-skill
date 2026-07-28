@@ -35,9 +35,9 @@ ANTES = os.path.join(SAIDA, "before-construction.png")
 DEPOIS = os.path.join(SAIDA, "completed-interior.png")
 VIDEO = os.path.join(SAIDA, "renovation-video.mp4")
 
-# kling-image-o1: "consistência de features, edição precisa" — o que mais
-# aproxima de EDITAR o ambiente em vez de reinterpretá-lo.
-MODELO_IMG = "kling-image-o1"
+# Medido em 2026-07-28: v3_0 foi o único dos três que manteve a janela e as
+# paredes cegas. o1 ("edição precisa") e v3_0_omni recriaram o ambiente.
+MODELO_IMG = "kling-image-v3_0"
 # kling-video-v2_5 aceita o par A->B via --tailImage e é o de melhor custo.
 MODELO_VIDEO = "kling-video-v2_5"
 
@@ -155,6 +155,12 @@ def etapa_imagem(modelo: str, resolucao: str) -> str:
 
 
 def etapa_video(modelo: str, duracao: str, resolucao: str) -> str:
+    # A API recusa: "720p is not supported with a tail image". O par A->B exige
+    # o tier 1080p (pro) — mais crédito que o default 720p do klingai-nei.
+    if resolucao != "1080p":
+        print(f"[kling] ⚠️  {resolucao} não é aceito com tail image; subindo para "
+              "1080p (tier pro, custa mais crédito)")
+        resolucao = "1080p"
     resp = submeter(
         ["kling", "image_to_video", "--image", ANTES, "--tailImage", DEPOIS,
          "--model", modelo, "--duration", duracao, "--resolution", resolucao,
@@ -187,7 +193,8 @@ def main() -> int:
     ap.add_argument("--modelo-video", default=MODELO_VIDEO,
                     help="kling-video-v2_5 | kling-video-v2_6 | kling-video-v3_0_turbo …")
     ap.add_argument("--duracao", default="5", choices=("5", "10"))
-    ap.add_argument("--resolucao", default="720p", help="default do Nei: 720p")
+    ap.add_argument("--resolucao", default="1080p",
+                    help="a API recusa 720p quando há tail image")
     ap.add_argument("--img-resolucao", default="1k")
     ap.add_argument("--so-imagem", action="store_true")
     ap.add_argument("--so-video", action="store_true")

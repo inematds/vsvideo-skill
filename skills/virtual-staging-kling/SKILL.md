@@ -45,10 +45,28 @@ Sem `--sim` o script só imprime a configuração e sai com código 2 — é o f
 
 | Flag | Default | Opções |
 |---|---|---|
-| `--modelo-img` | `kling-image-o1` | `kling-image-v3_0_omni`, `kling-image-v3_0`, `gpt-image2`, `gemini-3-pro-image`, `gemini-3.1-flash-image`, `kling-image-v2_1` |
+| `--modelo-img` | `kling-image-v3_0` | `kling-image-o1`, `kling-image-v3_0_omni`, `gpt-image2`, `gemini-3-pro-image`, `gemini-3.1-flash-image`, `kling-image-v2_1` |
 | `--modelo-video` | `kling-video-v2_5` | `kling-video-v2_6`, `kling-video-v3_0_turbo`, `kling-video-v3_0`, `kling-video-v3_0_omni`, `kling-video-o1` |
 | `--duracao` | `5` | `5`, `10` (segundos) |
-| `--resolucao` | `720p` | default do Nei — 1080p/4k só sob pedido explícito |
+| `--resolucao` | `1080p` | **obrigatório com tail image** — a API recusa 720p (tier pro, custa mais) |
+
+## Medido em 2026-07-28 (3 modelos de imagem + 1 de vídeo, na mesma sala)
+
+| Modelo de imagem | Resultado |
+|---|---|
+| `kling-image-o1` | ❌ recriou o ambiente; perdeu a janela principal |
+| `kling-image-v3_0_omni` | ❌ caixa de concreto, nenhuma abertura |
+| **`kling-image-v3_0`** | ✅ janela esquerda correta, paredes cegas — **é o default** |
+
+- **`LAYOUT=` faz diferença decisiva** na etapa de imagem; sem ele o modelo inventa aberturas.
+- **Vídeo `kling-video-v2_5` com `--tailImage`: o melhor resultado dos três motores.** Operários
+  com anatomia crível, piso sendo assentado, e o final aterrissa no keyframe B. 1916×1080, 5,08 s.
+- ⚠️ **`720p` é recusado quando há tail image** (`720p is not supported with a tail image`).
+  O script sobe para 1080p sozinho e avisa — contraria o default 720p do `klingai-nei`, mas é
+  a API que exige.
+- ⚠️ **Marca d'água "KlingAI"** em todas as imagens e em todos os frames do vídeo. É do
+  serviço, não do modelo — resolver no plano/conta ou cortar. **Inviabiliza entrega a cliente
+  como está.**
 
 Se o "antes" trocar a arquitetura, repita descrevendo o layout real:
 
