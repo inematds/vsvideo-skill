@@ -1,9 +1,13 @@
 ---
-name: virtual-staging-video
-description: Cria um vídeo realista de reforma (virtual staging) a partir de UMA imagem de interior já pronto. Gera a imagem "antes da obra" preservando câmera e arquitetura, e produz o time-lapse antes→depois com a API Agnes AI (custo US$ 0). Use quando pedirem "vídeo de reforma", "virtual staging", "antes e depois de ambiente", "time-lapse de obra", "transformar foto de interior em vídeo de reforma", ou quando anexarem uma foto/render de interior pedindo o vídeo da transformação.
+name: virtual-staging-agnes
+description: Cria um vídeo realista de reforma (virtual staging) a partir de UMA imagem de interior já pronto, com a API Agnes AI (custo US$ 0) — imagem "antes da obra" por img2img e time-lapse antes→depois por keyframes. É a skill DEFAULT para "vídeo de reforma", "virtual staging", "antes e depois de ambiente", "time-lapse de obra", "transformar foto de interior em vídeo de reforma", ou quando anexarem uma foto/render de interior pedindo o vídeo da transformação. Para o fluxo GPT Image + Higgsfield use virtual-staging-original; para Kling AI use virtual-staging-kling.
 ---
 
-# Virtual Staging Video
+# Virtual Staging Video — Agnes AI (US$ 0)
+
+> São **três skills irmãs**, uma por motor: `virtual-staging-agnes` (esta, sem custo),
+> `virtual-staging-original` (GPT Image + Higgsfield MCP) e `virtual-staging-kling`
+> (Kling AI, créditos pagos). Os prompts e o portão de consistência são os mesmos.
 
 ## Objetivo
 

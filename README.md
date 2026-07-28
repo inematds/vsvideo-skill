@@ -11,9 +11,27 @@ Skill que transforma **uma foto/render de interior finalizado** num **vídeo tim
 ## Como funciona
 
 1. Analisa a imagem enviada (câmera, perspectiva, arquitetura, materiais, luz, estilo).
-2. Gera com **GPT Image** a versão **antes da construção** do mesmo ambiente — mesma câmera, mesma arquitetura, só o acabamento muda.
-3. Valida a consistência (ângulo/layout). Se divergir, regenera.
-4. Gera o **vídeo de reforma** com **Higgsfield Seedance 2.0 Mini** (via Higgsfield MCP), usando a imagem "antes" como `@image1` e a finalizada como `@image2`.
+2. Gera a versão **antes da construção** do mesmo ambiente — mesma câmera, mesma arquitetura, só o acabamento muda.
+3. Valida a consistência (ângulo/layout). Se divergir, regenera — antes de gastar a etapa cara.
+4. Gera o **vídeo de reforma** interpolando "antes" → "depois" como par de keyframes.
+
+O motor de cada etapa depende da skill escolhida (tabela abaixo).
+
+## Três skills, um motor cada
+
+| Skill | Imagem "antes" | Vídeo | Custo |
+|---|---|---|---|
+| `virtual-staging-agnes` (default) | Agnes `agnes-image-2.1-flash` (img2img) | Agnes `agnes-video-v2.0` (keyframes) | **US$ 0** |
+| `virtual-staging-original` | GPT Image (ferramenta do agente) | Higgsfield Seedance 2.0 Mini (MCP) | conforme a conta |
+| `virtual-staging-kling` | Kling `image_to_image` (`kling-image-o1`, ou `gpt-image2`) | Kling `image_to_video` com `--tailImage` | **créditos Kling** |
+
+Prompts, portão de consistência e caminhos de saída são idênticos nas três — o que muda é o
+motor. Escolha pelo nome ao pedir ("faz o vídeo de reforma pelo Kling").
+
+```bash
+python3 agnes/rodar.py                    # Agnes: sem custo, roda direto
+python3 kling/rodar.py --so-imagem --sim  # Kling: só submete com --sim (é cobrado)
+```
 
 ## Estrutura
 
@@ -25,9 +43,12 @@ vsvideo-skill/
 │   ├── before-construction.png
 │   ├── completed-interior.png
 │   └── renovation-video.mp4
+├── agnes/                       # motor Agnes (HTTP, US$ 0) + prompts compartilhados
+├── kling/                       # motor Kling (CLI `kling`, créditos pagos)
 ├── skills/
-│   └── virtual-staging-video/
-│       └── SKILL.md             # a skill
+│   ├── virtual-staging-agnes/SKILL.md
+│   ├── virtual-staging-original/SKILL.md
+│   └── virtual-staging-kling/SKILL.md
 └── doc/                         # tutorial (PT/EN) + spec original
 ```
 
@@ -36,7 +57,7 @@ vsvideo-skill/
 Copie a pasta da skill para o diretório de skills do seu agente:
 
 ```bash
-cp -r skills/virtual-staging-video ~/.claude/skills/
+cp -r skills/virtual-staging-* ~/.claude/skills/
 ```
 
 Ou trabalhe direto dentro deste repo — o agente encontra a skill em `skills/`.
@@ -69,15 +90,20 @@ Sem usar `input/` — arraste a imagem e peça:
 
 Quando não quiser depender do gatilho:
 
-> usa a skill virtual-staging-video na imagem em input/interior-design.png
+> usa a skill virtual-staging-agnes na imagem em input/interior-design.png
 
-Se a skill estiver instalada em `~/.claude/skills/`, ela também responde como slash command:
+Trocando o nome, você escolhe o motor: `virtual-staging-agnes`, `virtual-staging-original`
+ou `virtual-staging-kling`. Instaladas em `~/.claude/skills/`, as três também respondem como
+slash command:
 
 ```
-/virtual-staging-video
+/virtual-staging-agnes
+/virtual-staging-original
+/virtual-staging-kling
 ```
 
-Antes de rodar, confira o MCP do Higgsfield com `/mcp` — sem ele a skill para nas duas imagens.
+Antes de rodar: no ramo **original**, confira o MCP com `/mcp` — sem o Higgsfield conectado
+a skill para nas duas imagens. No ramo **Kling**, lembre que cada submissão gasta crédito.
 
 Saídas em `output/`:
 
