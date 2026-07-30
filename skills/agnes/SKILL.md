@@ -26,6 +26,21 @@ python3 skills/agnes/rodar.py --so-imagem              # portão de consistênci
 python3 skills/agnes/rodar.py --so-video               # reusa o "antes" aprovado
 ```
 
+Para o pipeline de aproximadamente 18 segundos usado por sistemas de filas:
+
+```bash
+python3 skills/agnes/pipeline_18s.py \
+  --skill-dir skills/agnes \
+  --output-dir output/agnes-18s \
+  --mode preview \
+  --image input/interior-design.png
+```
+
+Modos: `preview`, `auto18` e `render18`. O fluxo gera os três keyframes de trás
+para frente, tenta cada um até três vezes, escolhe o melhor mesmo com aviso e
+usa exatamente dois trabalhadores em cada segmento de vídeo. Os keyframes
+permanecem sem pessoas.
+
 ## Origem da imagem "antes" (o vídeo é SEMPRE Agnes)
 
 | `--img` | Como funciona | Custo |

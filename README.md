@@ -17,29 +17,32 @@ Skill que transforma **uma foto/render de interior finalizado** num **vídeo tim
 
 O motor de cada etapa depende da skill escolhida (tabela abaixo).
 
-## Três skills, um motor cada
+## Quatro skills, um motor cada
 
 | # | Skill | Imagem "antes" | Vídeo | Custo |
 |---|---|---|---|---|
 | 1 | `higgsfield` (original) | GPT Image (ferramenta do agente) | Higgsfield Seedance 2.0 Mini (MCP) | conforme a conta |
 | 2 | `agnes` | `agnes-image-2.1-flash` (img2img) | `agnes-video-v2.0` (keyframes) | **US$ 0** |
 | 3 | `kling` | `kling-image-v3_0` (ou `gpt-image2`) | `kling-video-v2_5` com `--tailImage` | **créditos Kling** |
+| 4 | `codex-agnes` | Imagegen integrado à assinatura Codex | `agnes-video-v2.0` (3 segmentos) | limites Codex + Agnes grátis |
 
 Medido em 2026-07-28, na mesma sala: **melhor vídeo = `kling`** (operários críveis, aterrissa no
 keyframe B, mas com marca d'água KlingAI); **melhor custo = `agnes`** (US$ 0, operários borrados);
 **melhor "antes" = `kling-image-v3_0`**.
 
-Prompts, portão de consistência e caminhos de saída são idênticos nas três — o que muda é o
-motor. Escolha pelo nome ao pedir ("faz o vídeo de reforma pelo Kling").
+Os fluxos curtos preservam o comportamento original. `agnes` e `codex-agnes`
+também oferecem o pipeline em três partes, com aprovação opcional e portão de
+consistência. Escolha pelo nome ao pedir.
 
 ```bash
 python3 skills/agnes/rodar.py                          # Agnes completo (US$ 0)
 python3 skills/agnes/rodar.py --img gpt-image2 --sim   # GPT Image 2 na imagem + vídeo Agnes
+python3 skills/codex-agnes/rodar.py --help              # 3 imagens Codex + 3 vídeos Agnes
 python3 skills/kling/rodar.py --sim                    # Kling nos dois (crédito)
 python3 skills/higgsfield/rodar.py                     # prepara os handoffs do fluxo original
 ```
 
-## Estrutura — três sistemas independentes
+## Estrutura — quatro skills de vídeo
 
 ```text
 vsvideo-skill/
@@ -47,23 +50,36 @@ vsvideo-skill/
 ├── output/                       # tudo que é gerado
 ├── skills/
 │   ├── higgsfield/               # 1 — SKILL.md + rodar.py + prompts.py
-│   ├── agnes/                    # 2 — SKILL.md + rodar.py + client.py + prompts.py
-│   └── kling/                    # 3 — SKILL.md + rodar.py + prompts.py
+│   ├── agnes/                    # 2 — inclui pipeline_18s.py compartilhado
+│   ├── kling/                    # 3 — SKILL.md + rodar.py + prompts.py
+│   └── codex-agnes/              # 4 — Imagegen Codex + vídeos Agnes
+├── tests/                        # testes dos pipelines reutilizáveis
 └── doc/                          # tutorial (PT/EN) + spec original + PLANO-AGNES.md
 ```
 
-Cada pasta tem o próprio código e os próprios prompts — **nenhuma importa a outra**. Mexer
-numa não quebra as demais (o preço é a duplicação intencional dos prompts).
+`higgsfield`, `agnes` e `kling` permanecem independentes. `codex-agnes` reutiliza
+explicitamente o cliente e o pipeline de vídeo da skill `agnes`, mantendo toda a
+lógica de virtual staging neste repositório.
 
 ## Instalação
 
 Copie a pasta da skill para o diretório de skills do seu agente:
 
 ```bash
-cp -r skills/{higgsfield,agnes,kling} ~/.claude/skills/
+cp -r skills/{higgsfield,agnes,kling,codex-agnes} ~/.claude/skills/
 ```
 
 Ou trabalhe direto dentro deste repo — o agente encontra a skill em `skills/`.
+
+### Integração com InemacaBot
+
+O InemacaBot aponta `VSV_SKILLS_ROOT` para a pasta `skills/` deste repositório.
+O bot mantém somente autorização, comandos, filas, isolamento e entrega; os
+entrypoints, prompts, validação e geração de mídia permanecem aqui.
+
+```env
+VSV_SKILLS_ROOT=/root/projetos/vsvideo-skill/skills
+```
 
 ## Uso
 
@@ -95,14 +111,15 @@ Quando não quiser depender do gatilho:
 
 > usa a skill agnes na imagem em input/interior-design.png
 
-Trocando o nome, você escolhe o motor: `agnes`, `higgsfield`
-ou `kling`. Instaladas em `~/.claude/skills/`, as três também respondem como
+Trocando o nome, você escolhe o motor: `agnes`, `higgsfield`, `kling` ou
+`codex-agnes`. Instaladas no diretório de skills, elas também respondem como
 slash command:
 
 ```
 /agnes
 /higgsfield
 /kling
+/codex-agnes
 ```
 
 Antes de rodar: em `/higgsfield`, confira o MCP com `/mcp` — sem o Higgsfield conectado a skill
